@@ -13,22 +13,20 @@
 
 class ResourceManager {
 public:
-    void addDependency(const std::string &name, const std::string &dependency);
+    void add(const std::string &name, const std::string &dependency);
 
     void remove(const std::string &name);
 
-    bool isUsable(const std::string &name);
+    [[nodiscard]] bool isUsable(const std::string &name) const;
 
-    void print();
+    void print() const;
 
 private:
-    void setDeleted(const std::string &name, bool deleted);
-
-    void walkDependencies(const std::string &name, const std::function<void(const std::string &)> &handler);
+    bool anyOfDependencies(const std::string &name, const std::function<bool(const std::string &)> &predicate) const;
 
     std::unordered_map<std::string, Resource> resources;
 
-    // TODO: cache isUSable status, dirty flag
+    // TODO: cache isUsable status, dirty flag
 };
 
 #endif //SMU_ASSIGNMENT_1_RESOURCEMANAGER_H

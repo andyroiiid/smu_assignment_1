@@ -10,7 +10,7 @@
 
 struct Resource {
     bool isDeleted = false;
-    std::list<std::string> dependencies;
+    std::list<std::string> dependencies; // TODO: use pointers
 };
 
 #endif //SMU_ASSIGNMENT_1_RESOURCE_H

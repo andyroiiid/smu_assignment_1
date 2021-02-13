@@ -6,12 +6,11 @@
 
 #include <algorithm>
 
-void ResourceManager::addDependency(const std::string &name, const std::string &dependency) {
-    bool cyclicDependency = false;
-    walkDependencies(dependency, [&](const std::string &dep) {
-        if (name == dep)
-            cyclicDependency = true;
+void ResourceManager::add(const std::string &name, const std::string &dependency) {
+    bool cyclicDependency = anyOfDependencies(dependency, [&](const std::string &dep) {
+        return name == dep;
     });
+
     if (cyclicDependency) {
         fprintf(stderr, "ignore cyclic dependency %s -> %s\n", name.c_str(), dependency.c_str());
         return;
@@ -28,22 +27,22 @@ void ResourceManager::addDependency(const std::string &name, const std::string &
 }
 
 void ResourceManager::remove(const std::string &name) {
-    setDeleted(name, true);
+    if (resources.find(name) == resources.end())
+        return;
+
+    resources.at(name).isDeleted = true;
 }
 
-bool ResourceManager::isUsable(const std::string &name) {
+bool ResourceManager::isUsable(const std::string &name) const {
     if (resources.find(name) == resources.end())
         return false;
 
-    bool usable = true;
-    walkDependencies(name, [&](const std::string &dep) {
-        if (resources.at(dep).isDeleted)
-            usable = false;
+    return !anyOfDependencies(name, [&](const std::string &dep) {
+        return resources.at(dep).isDeleted;
     });
-    return usable;
 }
 
-void ResourceManager::print() {
+void ResourceManager::print() const {
     for (const auto &[name, resource] : resources) {
         if (resource.isDeleted)
             continue;
@@ -56,24 +55,13 @@ void ResourceManager::print() {
     }
 }
 
-void ResourceManager::setDeleted(const std::string &name, bool deleted) {
+bool ResourceManager::anyOfDependencies(const std::string &name,
+                                        const std::function<bool(const std::string &)> &predicate) const {
     if (resources.find(name) == resources.end())
-        return;
-
-    resources.at(name).isDeleted = deleted;
-}
-
-// TODO: early abort
-void ResourceManager::walkDependencies(
-        const std::string &name,
-        const std::function<void(const std::string &)> &handler
-) {
-    if (resources.find(name) == resources.end())
-        return;
+        return false;
 
     const auto &dependencies = resources.at(name).dependencies;
-    for (const auto &dependency: dependencies) {
-        handler(dependency);
-        walkDependencies(dependency, handler);
-    }
+    return std::any_of(dependencies.begin(), dependencies.end(), [&](const std::string &dependency) {
+        return predicate(dependency) || anyOfDependencies(dependency, predicate);
+    });
 }

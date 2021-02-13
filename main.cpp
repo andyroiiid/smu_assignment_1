@@ -1,7 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <functional>
 
 #include "ResourceManager.h"
 
@@ -39,17 +37,17 @@ int main() {
     ResourceManager resourceManager;
 
     readTuplesFromFile("resource.txt", [&](const std::string &name, const std::string &dependency) {
-        resourceManager.addDependency(name, dependency);
+        resourceManager.add(name, dependency);
     });
 
     resourceManager.print();
 
-    std::string command;
-    while (std::getline(std::cin, command)) {
-        if (command == "q")
+    std::string input;
+    while (std::getline(std::cin, input)) {
+        if (input == "q")
             break;
 
-        resourceManager.remove(command);
+        resourceManager.remove(input);
 
         resourceManager.print();
     }
