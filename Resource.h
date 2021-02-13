@@ -8,9 +8,19 @@
 #include <list>
 #include <string>
 
+/*
+ * the struct for a resource node
+ */
 struct Resource {
+    /*
+     * flag for deletion
+     */
     bool isDeleted = false;
-    std::list<std::string> dependencies; // TODO: use pointers
+
+    /*
+     * container for all dependencies
+     */
+    std::list<std::string> dependencies;
 };
 
 #endif //SMU_ASSIGNMENT_1_RESOURCE_H
